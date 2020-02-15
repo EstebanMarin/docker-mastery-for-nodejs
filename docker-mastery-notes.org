@@ -1,0 +1,6 @@
+#+TITLE: Docker Mastery notes
+* Docker Mastery node notes
+** Install Docker and docker-compose
+   best advice is to follow documentation here
+   - Docker install  https://docs.docker.com/compose/install/
+   - Compose  https://docs.docker.com/compose/install/
