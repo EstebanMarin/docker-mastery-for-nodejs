@@ -1,6 +1,115 @@
 #+TITLE: Docker Mastery notes
 * Docker Mastery node notes
-** Install Docker and docker-compose
-   best advice is to follow documentation here
-   - Docker install  https://docs.docker.com/compose/install/
-   - Compose  https://docs.docker.com/compose/install/
+** Session 1
+*** Install Docker and docker-compose and post install
+    Best advice is to follow documentation here, take into account that installation varies by OS and also /millage may vary/.
+    - Docker install  https://docs.docker.com/compose/install/
+    - Compose  https://docs.docker.com/compose/install/
+    - Make sure to run post installation instructions https://docs.docker.com/install/linux/linux-postinstall/ (set correctly docker and docker-compose permissions specially linux)
+
+    Lastly make sure that you are in the right *docker* and *docker-compose* versions
+    #+begin_src zsh
+     docker version
+    #+end_src
+    #+RESULTS:
+    | Client:       | Docker                                   | Engine     | -        | Community |       |
+    | Version:      | 19.03.6                                  |            |          |           |       |
+    | API           | version:                                 | 1.4        |          |           |       |
+    | Go            | version:                                 | go1.12.16  |          |           |       |
+    | Git           | commit:                                  | 369ce74a3c |          |           |       |
+    | Built:        | Thu                                      | Feb        | 13       | 01:27:49  |  2020 |
+    | OS/Arch:      | linux/amd64                              |            |          |           |       |
+    | Experimental: | false                                    |            |          |           |       |
+    | Server:       | Docker                                   | Engine     | -        | Community |       |
+    | Engine:       |                                          |            |          |           |       |
+    | Version:      | 19.03.6                                  |            |          |           |       |
+    | API           | version:                                 | 1.4        | (minimum | version   | 1.12) |
+    | Go            | version:                                 | go1.12.16  |          |           |       |
+    | Git           | commit:                                  | 369ce74a3c |          |           |       |
+    | Built:        | Thu                                      | Feb        | 13       | 01:26:21  |  2020 |
+    | OS/Arch:      | linux/amd64                              |            |          |           |       |
+    | Experimental: | false                                    |            |          |           |       |
+    | containerd:   |                                          |            |          |           |       |
+    | Version:      | 1.2.10                                   |            |          |           |       |
+    | GitCommit:    | b34a5c8af56e510852c35414db4c1f4fa6172339 |            |          |           |       |
+    | runc:         |                                          |            |          |           |       |
+    | Version:      | 1.0.0-rc8+dev                            |            |          |           |       |
+    | GitCommit:    | 3e425f80a8c931f88e6d94a8c831b9d5aa481657 |            |          |           |       |
+    | docker-init:  |                                          |            |          |           |       |
+    | Version:      | 0.18.0                                   |            |          |           |       |
+    | GitCommit:    | fec3683                                  |            |          |           |       |
+    #+begin_src zsh
+     docker-compose version
+    #+end_src
+    #+RESULTS:
+    | docker-compose | version  | 1.25.4, | build | unknown |     |      |
+    | docker-py      | version: |   4.2.0 |       |         |     |      |
+    | CPython        | version: |   3.6.9 |       |         |     |      |
+    | OpenSSL        | version: | OpenSSL | 1.1.1 |      11 | Sep | 2018 |
+*** Why Compose?
+    - 2 parts: =CLI= and =YAML= files
+    - Designed around developer workflows
+    - =docker-compose= CLI a substitute for =docker= CLI
+    - It hides complexity, enhancing the developer experience
+      Let say you have to spin up this container time you start o re-start your development environment
+      #+begin_docker run example
+    docker run -p 8080:3000 -p 9229:9229 -e NODE_ENV=development -v $(pwd):app yournodeapp ../node_modules/.bin/nodemon --inspect=0.0.0.0:9229 --inspect=0.0.0.0:9229 ./bin/www
+      #+end_docker
+      There is a lot of complexity there, as we need to open some ports, as well as declaring volumes and additional configurations, you really do not want to type that everyday! In order to work with this complexity developers created shell scripts.
+       =docker-compose= span-out of the idea, *lets not create any more scripts*, lets create tooling that automates this workflow in a more declarative way.
+    - Its not designed for production environments.
+      Say you need redundancy across servers, that is where orchestration shine
+*** Compose File format
+    - Docker standard, not yet industry
+    - Defines multiple containers, networks, volumes, etc.
+    - Can layer multiple layers sets of YAML files, use templates, variables, and more.
+    - =docker-compose.yml= default
+**** YAML
+     - *YAML*: =YAML Ain't Markup Language=
+     - Used by Docker, Kubernetes, Amazon, and others.
+     - Its a way to describe data in a simple way so it can be used by others downstream where it is processed, really its a mean to and end. A nice thing is that is human readable, that afterwards gets transformed.
+     - =:= used for key/value pair
+     - Only spaces, no tabs
+     - =-= used for list
+     #+begin_YAML template
+     version: '2.0'
+
+     services:
+       web:
+         image: simple-01
+         build: .
+         ports:
+           - "3000:3000"
+     #+end_YAML
+    | item    | description                                                                       |
+    |---------+-----------------------------------------------------------------------------------|
+    | version | '2.0' && '3.0' are different and they are not related, unfortunate naming mistake |
+    | service | 1 or more containers based on a single image                                      |
+    | image   | image to build from                                                               |
+    | build   | =.= stands for current directory                                                  |
+**** Compose YAML v2 vs v3
+    - =v2= does not replace =v3=
+    - =v2= focus: single-node dev/test
+    - =v3= focus: multi-node orchestration
+    - If not using Swarm/Kubernetes, stick to v2
+*** =docker-compose= CLI
+    - many =docker= commands === =docker-compose=
+    - "batteries included, but swappable", meaning that it comes with defaults but they can change.
+    - CLI and YAML version differ, so you need to ensure that the YAML version is supported by the CLI, of course the error can appear, just be were about it.
+    - it build/pull image(s) if missing
+**** =docker-compose up=
+       - "one stop shop"
+       - create volumes/networks/container(s)
+       - starts container(s) in foreground (-d to detach)
+       - =--build= to always build
+**** =docker-compose down=
+     - stop and delete network/container(s)
+     - by default does not stop volumes
+**** =docker-compose=
+     *build* just build/rebuild image(s)
+     *stop* just stop containers don't delete
+     *ps* list "services"
+     *push* to docker registry
+     *logs* same as =docker= CLI
+     *exec* same as =docker= CLI
+*** Assignment
