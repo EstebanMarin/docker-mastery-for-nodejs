@@ -116,3 +116,6 @@
 *** Assignment
     - [ ] Get acquainted with the =docker-compose= https://docs.docker.com/compose/reference/overview/
     - [ ]
+** Session 2
+*** Docker-Node Best practices
+    - =Copy= not =Add= as add can un-tar or install packages, =Add= is an old way of doing this
