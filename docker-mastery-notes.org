@@ -1,3 +1,4 @@
+#+REVEAL_ROOT: https://cdn.jsdelivr.net/npm/reveal.js@3.8.0
 #+TITLE: Docker Mastery notes
 * Docker Mastery node notes
 ** Session 1
@@ -113,3 +114,5 @@
      *logs* same as =docker= CLI
      *exec* same as =docker= CLI
 *** Assignment
+    - [ ] Get acquainted with the =docker-compose= https://docs.docker.com/compose/reference/overview/
+    - [ ]

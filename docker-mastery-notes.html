@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Docker Mastery notes</title>
+<meta name="author" content="esteban"/>
+<style type="text/css">
+.underline { text-decoration: underline; }
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@3.8.0/css/reveal.css"/>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@3.8.0/css/theme/black.css" id="theme"/>
+
+<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+<script>
+    if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = 'https://cdn.jsdelivr.net/npm/reveal.js@3.8.0/css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    }
+</script>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+<section id="sec-title-slide">
+<h1 class="title">Docker Mastery notes</h1><h2 class="author">esteban</h2><p class="date">Created: 2020-02-16 Sun 10:45</p>
+</section>
+<section id="table-of-contents-section">
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#/slide-1">1. Docker Mastery node notes</a>
+<ul>
+<li><a href="#/slide-1-1">1.1. Session 1</a>
+<ul>
+<li><a href="#/slide-1-1-1">1.1.1. Install Docker and docker-compose and post install</a></li>
+<li><a href="#/slide-1-1-2">1.1.2. Why Compose?</a></li>
+<li><a href="#/slide-1-1-3">1.1.3. Compose File format</a></li>
+<li><a href="#/slide-1-1-4">1.1.4. <code>docker-compose</code> CLI</a></li>
+<li><a href="#/slide-1-1-5">1.1.5. Assignment</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</section>
+<section>
+<section id="slide-1">
+<h2 id="1"><span class="section-number-2">1</span> Docker Mastery node notes</h2>
+<div class="outline-text-2" id="text-1">
+</div>
+</section>
+<section id="slide-1-1">
+<h3 id="1-1"><span class="section-number-3">1.1</span> Session 1</h3>
+<div class="outline-text-3" id="text-1-1">
+</div>
+</section>
+<section id="slide-1-1-1">
+<h4 id="1-1-1"><span class="section-number-4">1.1.1</span> Install Docker and docker-compose and post install</h4>
+<p>
+Best advice is to follow documentation here, take into account that installation varies by OS and also <i>millage may vary</i>.
+</p>
+<ul>
+<li>Docker install  <a href="https://docs.docker.com/compose/install/">https://docs.docker.com/compose/install/</a></li>
+<li>Compose  <a href="https://docs.docker.com/compose/install/">https://docs.docker.com/compose/install/</a></li>
+<li>Make sure to run post installation instructions <a href="https://docs.docker.com/install/linux/linux-postinstall/">https://docs.docker.com/install/linux/linux-postinstall/</a> (set correctly docker and docker-compose permissions specially linux)</li>
+
+</ul>
+
+<p>
+Lastly make sure that you are in the right <b>docker</b> and <b>docker-compose</b> versions
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-zsh">docker version
+</pre>
+</div>
+<div class="org-src-container">
+
+<pre  class="src src-zsh">docker-compose version
+</pre>
+</div>
+</section>
+<section id="slide-1-1-2">
+<h4 id="1-1-2"><span class="section-number-4">1.1.2</span> Why Compose?</h4>
+<ul>
+<li>2 parts: <code>CLI</code> and <code>YAML</code> files</li>
+<li>Designed around developer workflows</li>
+<li><code>docker-compose</code> CLI a substitute for <code>docker</code> CLI</li>
+<li><p>
+It hides complexity, enhancing the developer experience
+Let say you have to spin up this container time you start o re-start your development environment
+</p>
+<div class="docker">
+<p>
+docker run -p 8080:3000 -p 9229:9229 -e NODE<sub>ENV</sub>=development -v $(pwd):app yournodeapp ../node<sub>modules</sub>/.bin/nodemon &#x2013;inspect=0.0.0.0:9229 &#x2013;inspect=0.0.0.0:9229 ./bin/www
+</p>
+
+</div>
+<p>
+There is a lot of complexity there, as we need to open some ports, as well as declaring volumes and additional configurations, you really do not want to type that everyday! In order to work with this complexity developers created shell scripts.
+ <code>docker-compose</code> span-out of the idea, <b>lets not create any more scripts</b>, lets create tooling that automates this workflow in a more declarative way.
+</p></li>
+<li>Its not designed for production environments.
+Say you need redundancy across servers, that is where orchestration shine</li>
+
+</ul>
+</section>
+<section id="slide-1-1-3">
+<h4 id="1-1-3"><span class="section-number-4">1.1.3</span> Compose File format</h4>
+<ul>
+<li>Docker standard, not yet industry</li>
+<li>Defines multiple containers, networks, volumes, etc.</li>
+<li>Can layer multiple layers sets of YAML files, use templates, variables, and more.</li>
+<li><code>docker-compose.yml</code> default</li>
+
+</ul>
+<ol class="org-ol">
+<li><a id="1-1-3-1"></a>YAML<br />
+<ul>
+<li><b>YAML</b>: <code>YAML Ain't Markup Language</code></li>
+<li>Used by Docker, Kubernetes, Amazon, and others.</li>
+<li>Its a way to describe data in a simple way so it can be used by others downstream where it is processed, really its a mean to and end. A nice thing is that is human readable, that afterwards gets transformed.</li>
+<li><code>:</code> used for key/value pair</li>
+<li>Only spaces, no tabs</li>
+<li><code>-</code> used for list</li>
+
+</ul>
+<div class="YAML">
+<p>
+version: '2.0'
+</p>
+
+<p>
+services:
+  web:
+    image: simple-01
+    build: .
+    ports:
+</p>
+<ul>
+<li>"3000:3000"</li>
+
+</ul>
+
+</div>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">item</th>
+<th scope="col" class="org-left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">version</td>
+<td class="org-left">'2.0' &amp;&amp; '3.0' are different and they are not related, unfortunate naming mistake</td>
+</tr>
+
+<tr>
+<td class="org-left">service</td>
+<td class="org-left">1 or more containers based on a single image</td>
+</tr>
+
+<tr>
+<td class="org-left">image</td>
+<td class="org-left">image to build from</td>
+</tr>
+
+<tr>
+<td class="org-left">build</td>
+<td class="org-left"><code>.</code> stands for current directory</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><a id="1-1-3-2"></a>Compose YAML v2 vs v3<br />
+<ul>
+<li><code>v2</code> does not replace <code>v3</code></li>
+<li><code>v2</code> focus: single-node dev/test</li>
+<li><code>v3</code> focus: multi-node orchestration</li>
+<li>If not using Swarm/Kubernetes, stick to v2</li>
+
+</ul>
+</li>
+</ol>
+</section>
+<section id="slide-1-1-4">
+<h4 id="1-1-4"><span class="section-number-4">1.1.4</span> <code>docker-compose</code> CLI</h4>
+<ul>
+<li>many <code>docker</code> commands <code>=</code> <code>docker-compose</code></li>
+<li>"batteries included, but swappable", meaning that it comes with defaults but they can change.</li>
+<li>CLI and YAML version differ, so you need to ensure that the YAML version is supported by the CLI, of course the error can appear, just be were about it.</li>
+<li>it build/pull image(s) if missing</li>
+
+</ul>
+<ol class="org-ol">
+<li><a id="1-1-4-1"></a><code>docker-compose up</code><br />
+<ul>
+<li>"one stop shop"</li>
+<li>create volumes/networks/container(s)</li>
+<li>starts container(s) in foreground (-d to detach)</li>
+<li><code>--build</code> to always build</li>
+
+</ul>
+</li>
+<li><a id="1-1-4-2"></a><code>docker-compose down</code><br />
+<ul>
+<li>stop and delete network/container(s)</li>
+<li>by default does not stop volumes</li>
+
+</ul>
+</li>
+<li><a id="1-1-4-3"></a><code>docker-compose</code><br />
+<p>
+<b>build</b> just build/rebuild image(s)
+<b>stop</b> just stop containers don't delete
+<b>ps</b> list "services"
+<b>push</b> to docker registry
+<b>logs</b> same as <code>docker</code> CLI
+<b>exec</b> same as <code>docker</code> CLI
+</p>
+</li>
+</ol>
+</section>
+<section id="slide-1-1-5">
+<h4 id="1-1-5"><span class="section-number-4">1.1.5</span> Assignment</h4>
+<ul>
+<li class="off"><code>[&#xa0;]</code> Get acquainted with the <code>docker-compose</code> <a href="https://docs.docker.com/compose/reference/overview/">https://docs.docker.com/compose/reference/overview/</a></li>
+<li class="off"><code>[&#xa0;]</code> </li>
+
+</ul>
+</section>
+</section>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@3.8.0/lib/js/head.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@3.8.0/js/reveal.js"></script>
+<script>
+// Full list of configuration options available here:
+// https://github.com/hakimel/reveal.js#configuration
+Reveal.initialize({
+
+controls: true,
+progress: true,
+history: false,
+center: true,
+slideNumber: 'c',
+rollingLinks: false,
+keyboard: true,
+mouseWheel: false,
+fragmentInURL: false,
+hashOneBasedIndex: false,
+pdfSeparateFragments: true,
+
+overview: true,
+
+theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+transition: Reveal.getQueryHash().transition || 'convex', // see README of reveal.js for options
+transitionSpeed: 'default',
+
+// Optional libraries used to extend reveal.js
+dependencies: [
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js@3.8.0/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js@3.8.0/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js@3.8.0/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } },
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js@3.8.0/plugin/search/search.js', async: true, condition: function() { return !!document.body.classList; } },
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js@3.8.0/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } }]
+
+});
+</script>
+</body>
+</html>
