@@ -1,7 +1,7 @@
 #+REVEAL_ROOT: https://cdn.jsdelivr.net/npm/reveal.js@3.8.0
-#+TITLE: Docker Mastery notes
+#+TITLE: Docker for Node Mastery notes
 * Docker Mastery node notes
-** Session 1
+** Session 1 => docker-compose basics
 *** Install Docker and docker-compose and post install
     Best advice is to follow documentation here, take into account that installation varies by OS and also /millage may vary/.
     - Docker install  https://docs.docker.com/compose/install/
@@ -113,9 +113,303 @@
      *push* to docker registry
      *logs* same as =docker= CLI
      *exec* same as =docker= CLI
-*** Assignment
+*** Assignment [/] [%]
     - [ ] Get acquainted with the =docker-compose= https://docs.docker.com/compose/reference/overview/
-    - [ ]
-** Session 2
+** Session 2 => Node Dockerfile best practices
+*** RESOURCES [3/3]
+    - [X] Official Docker [[https://docs.docker.com/develop/develop-images/dockerfile_best-practices/][best practices with Dockerfile]]
+    - [X] Docker file [[https://docs.docker.com/engine/reference/builder/#user][#USER]] reference
+    - [X] Official node [[https://hub.docker.com/_/node][IMAGE]]
 *** Docker-Node Best practices
     - =Copy= not =Add= as add can un-tar or install packages, =Add= is an old way of doing this
+*** From BASE Guidelines
+    - Not use *latest*, stick to even numbers of releases
+    - Start with =Debian= if you are migrating an application
+    - Try using =Alpine= from the start, but normally all start with *Debian*
+    - Don't use =:slim=
+      | =strech=                            | =jessie=                     |
+      |-------------------------------------+------------------------------|
+      | Uses the latest version of =Debian= | Uses past versions of the OS |
+    - Don't use =:onbuild=
+*** When to use =Alpine=, =Debian=, or =CentOS=
+    | =Alpine=                                                      | =Debian=                           | =CentOS=                              |
+    |---------------------------------------------------------------+------------------------------------+---------------------------------------|
+    | "Small" and Security focused                                  | Debian/Ubuntu are small too ~100MB | Enterprises may require other distros |
+    | Very little out of the box                                    |                                    |                                       |
+    | It has it own issues, example nodemon had an issue restarting |                                    |                                       |
+    | CVE scanning fails in =Alpine=                                |                                    |                                       |
+
+#  LocalWords:  distros PID init SIGKILL ctrl tini Dockerfiles runtine BuildKit
+*** Assignment making a =CentOS= Node image [3/3] [100%]              :USERS:
+    Check the [[./centos-node/Dockerfile][Dockerfile]]
+    - [X] Install Node in the official CentOS
+    - [X] Copy Dockerfile lines from node:10
+      - [X] Click on the link of the docker file of that repo, and check what is important there
+    - [X] Use ENV to specify the node version
+*** Running non-root Containers Users                                 :USERS:
+    Best practice run the docker container as a non-root user for security reasons, however, it not enabled by default
+    - Official images have =node= users
+    - It's not enabled by default
+    - Do this /after/  =apk/apk=  and =npm i -g=
+    - Do this /before/ =npm i=
+    - *This May cause permissions issues*
+    - *May require* =chown node:node=
+**** Change user from root to node
+     - =USER node=, this comes upstream
+**** Set permissions on app directory
+     - =RUN mkdir app && chown -R node:node .=
+**** Run  a command as a Root in Container
+     - =docker-compose exec -u root=
+*** Working with the Node user limits                                 :USERS:
+    Working file [[/home/esteban/Apps/docker-mastery-for-nodejs/user-node/Dockerfile][here]]
+**** Putting at the end of the file the change of user
+      #+begin_example Dockerfile
+      FROM node:10-slim
+
+      EXPOSE 3000
+
+      WORKDIR /node
+
+      COPY package*.json ./
+
+      RUN npm install && npm cache clean --force
+
+      WORKDIR /node/app
+
+      COPY . .
+      USER node
+      CMD ["node", "app.js"]
+      #+end_example
+       When running within the container you can see that everything is root
+       #+begin_example
+      /docker:hopeful_lumiere:/ #$ ls
+      app  node_modules  package-lock.json  package.json
+      /docker:hopeful_lumiere:/ #$ ls -al
+      total 44
+      drwxr-xr-x  1 root root  4096 Mar  7 19:10 .
+      drwxr-xr-x  1 root root  4096 Mar  7 19:11 ..
+      drwxr-xr-x  1 root root  4096 Mar  7 19:10 app
+      drwxr-xr-x 41 root root  4096 Mar  7 19:10 node_modules
+      -rw-rw-r--  1 root root 21260 Feb 15 20:29 package-lock.json
+      -rw-rw-r--  1 root root   316 Feb 15 20:29 package.json
+       #+end_example
+       So this means that my app will run and will have full =read= permissions, however if it expect to write, this will not be available, like a =npm install=
+**** Putting it all the way in the top
+      #+begin_example Dockerfile
+      FROM node:10-slim
+
+      USER node
+      EXPOSE 3000
+
+      WORKDIR /node
+
+      COPY package*.json ./
+
+      RUN npm install && npm cache clean --force
+
+      WORKDIR /node/app
+
+      COPY . .
+      CMD ["node", "app.js"]
+      #+end_example
+
+      #+begin_example
+      Step 6/9 : RUN npm install && npm cache clean --force
+      ---> Running in 1b499db86e41
+      npm WARN checkPermissions Missing write access to /node
+      npm WARN user-node@1.0.0 No description
+      npm WARN user-node@1.0.0 No repository field.
+
+      npm ERR! code EACCES
+      npm ERR! syscall access
+      npm ERR! path /node
+      npm ERR! errno -13
+      npm ERR! Error: EACCES: permission denied, access '/node'
+      npm ERR!  { [Error: EACCES: permission denied, access '/node']
+      npm ERR!   stack: 'Error: EACCES: permission denied, access \'/node\'',
+      npm ERR!   errno: -13,
+      npm ERR!   code: 'EACCES',
+      npm ERR!   syscall: 'access',
+      npm ERR!   path: '/node' }
+      npm ERR!
+      npm ERR! The operation was rejected by your operating system.
+      npm ERR! It is likely you do not have the permissions to access this file as the current user
+      npm ERR!
+      npm ERR! If you believe this might be a permissions issue, please double-check the
+      npm ERR! permissions of the file and its containing directories, or try running
+      npm ERR! the command again as root/Administrator.
+
+      npm ERR! A complete log of this run can be found in:
+      npm ERR!     /home/node/.npm/_logs/2020-03-07T19_20_45_989Z-debug.log
+      The command '/bin/sh -c npm install && npm cache clean --force' returned a non-zero code: 243
+      #+end_example
+
+      So we won't be able to build the image in this case
+**** SO here is the fix
+    With the latest version of the file [[/home/esteban/Apps/docker-mastery-for-nodejs/user-node/Dockerfile][here]]
+
+     #+begin_example
+      cd node
+      /docker:hungry_meninsky:/ #$ ls
+      app  node_modules  package-lock.json  package.json
+      /docker:hungry_meninsky:/ #$ ls -al
+      total 44
+      drwxr-xr-x  1 node node  4096 Mar  7 19:24 .
+      drwxr-xr-x  1 root root  4096 Mar  7 19:25 ..
+      drwxr-xr-x  1 node node  4096 Mar  7 19:24 app
+      drwxr-xr-x 41 node node  4096 Mar  7 19:24 node_modules
+      -rw-rw-r--  1 node node 21260 Feb 15 20:29 package-lock.json
+      -rw-rw-r--  1 node node   316 Feb 15 20:29 package.json
+     #+end_example
+     You can see that now the =app= folder has the =node= user
+     Finally ensure that you also when copying files give them =node= permission as well using =COPY --chown node:node . .=, rather than =COPY . .=
+*** Making Images Efficiently
+    Line order matters, so it is a good practice to:
+    1. Copy *only* the package and the lock files
+    2. Run npm install
+    3. Copy everything else
+    4. Any other dependencies like =curl= install it before =COPY= and run it before npm installs
+    That way you cache intelligently the node packages, something like so:
+    #+begin_example
+    FROM node:10-slim
+
+    EXPOSE 3000
+    RUN apt-get update && apt-get install curl
+    WORKDIR /node
+
+    COPY package.json package-lock.json* ./
+    # Notice the *, this indicates copy if there
+    RUN mkdir app && chown -R node:node .
+    USER node
+
+    RUN npm install && npm cache clean --force
+    RUN
+
+    WORKDIR /node/app
+
+    COPY --chown=node:node . .
+    CMD ["node", "app.js"]
+    #+end_example
+** Session 3 => Controlling Node processes in Containers
+*** Node process Management
+**** What happened before containers?
+     We used to run in servers something like:
+     - [[https://pm2.keymetrics.io/][PM2]]
+     - [[https://nodemon.io/][nodemon]]
+     - [[https://riptutorial.com/node-js/example/13417/running-and-stopping-a-forever-daemon][forever]]
+     Their main purpose was to run/manage =node= processes.
+     We do not need this anymore, at least in production, because Docker manages app start, stop, restart, hatchecks native and better
+     Node multi-thread: Docker "Replicas"
+     =There is one problem however=
+     Out of the box npm/node don't handle properly shutdown signals
+*** The truth about the PID-1 problem
+    - PID 1 (process identifier) is the first process in the system (AKA init)
+    - Init process has 2 jobs in a container:
+      - reap Zombie processes
+        - Happens when the parent process crashes and they are left there in the wild
+      - Pass signals to sub-processes
+    - Zombie processes is not a thing in Node really
+    - Handling shutdown !
+**** Properly CMD for healthy shutdown
+     - Docker uses the following Linux signals
+      | SIGINIT                                    | SIGTERM                                    | SIGKILL                                          |
+      |--------------------------------------------+--------------------------------------------+--------------------------------------------------|
+      | When you use a C-c                         | `docker container stop`                    | This is not a healthy way to terminate a process |
+      | Its seen by the app allows gracefully stop | Its seen by the app allows gracefully stop | Here is not the case                             |
+      | NPM does not handle this well              | NPM does not handle this well              | ---                                              |
+      | Node can handle these but not by default   | Same here using Tiny                       | ---                                              |
+*** Proper Node shutdown Options
+    There are 3 ways to properly shutdown an node application
+    1. *Temp*: Use =--init= to fix ctrl-c for now
+       - =docker run --init -d nodeapp=
+    2. *Workaround*: add tini to your image
+       #+begin_example
+       RUN apk --no-cache tini
+       ENTRYPOINT ["/sbin/tini", "--"]
+       CMD ["node", "./bin/www"]
+       #+end_example
+    3. *Production*: your app captures =SIGINIT= for proper exit
+       You can look at this example [[./sample-graceful-shutdown/sample.js][File here]]
+       #+begin_example javascript
+        // place this code in your node app, ideally in index.js or ./bin/www
+        //
+        // you need this code so node will watch for exit signals
+        // node by default doesn't handle SIGINT/SIGTERM
+        // docker containers use SIGINT and SIGTERM to properly exit
+        //
+        // signals also aren't handeled by npm:
+        // https://github.com/npm/npm/issues/4603
+        // https://github.com/npm/npm/pull/10868
+        // https://github.com/RisingStack/kubernetes-graceful-shutdown-example/blob/master/src/index.js
+        // if you want to use npm then start with `docker run --init` to help, but I still don't think it's
+        // a graceful shutdown of node process, just a forced exit
+        //
+
+        // quit on ctrl-c when running docker in terminal
+        process.on('SIGINT', function onSigint () {
+          console.info('Got SIGINT (aka ctrl-c in docker). Graceful shutdown ', new Date().toISOString());
+          shutdown();
+        });
+
+        // quit properly on docker stop
+        process.on('SIGTERM', function onSigterm () {
+          console.info('Got SIGTERM (docker container stop). Graceful shutdown ', new Date().toISOString());
+          shutdown();
+        })
+
+        // shut down server
+        function shutdown() {
+          // NOTE: server.close is for express based apps
+          // If using hapi, use `server.stop`
+          server.close(function onServerClosed (err) {
+            if (err) {
+              console.error(err);
+              process.exitCode = 1;
+            }
+            process.exit();
+          })
+        }
+       #+end_example
+*** Assignment: Writing Node Dockerfiles [4/4] [100%]
+    Assignment file [[./assignment-dockerfile/Dockerfile][here]]
+    1. [X] Taken an existing image of Node
+    2. [X] Expose The ports
+       - When running the port ensure that you have =-p 80:3000= local port to 3000 in container
+    3. [X] Install tini in node
+    4. [X] Copy packages/lock files first, then npm, then Copy
+*** Assignment: Testing graceful shutdowns [2/4] [50%]
+    1. [X] Run it with tini built in, try to ctrl-c
+    2. [X] Comment the =ENTRYPOINT=
+    3. [ ] Fix this with the =--init= command to add tini at run-time
+       1. [ ] Notice that tini is in a different location =/dev/init=
+    4. [ ] Use =docker top <container>= to check the processes run
+****  Bonus: Add Signal watch code
+     You will need to update the =js= file adding the following (update for happy)
+**** Conclusions
+     - Controlling the termination process is very important as it avoid long waiting times
+     - Ensuring that there is a graceful shutdown makes our application more performant
+     - tini can help us this at run time when we cannot manage the image, or ensuring that tini is there from the start
+** Session 4 => Advanced docker files with multistage built and BuildKit
+*** RESOURCES
+    - Advanced multi-stage built [[https://medium.com/@tonistiigi/advanced-multi-stage-build-patterns-6f741b852fae][MEDIUM]]
+    - Official Docker [[https://docs.docker.com/develop/develop-images/multistage-build/][documentation]]
+*** Multi-stage Docker built
+    - New feature in 17.06 (mid-2017)
+    - Build multiple images from one file
+    - These images can =FROM= each other
+    - =COPY= file between them
+    - Space + Security benefits
+      - As you have an image for a specific purpose and have less attack surface
+    - =ARTIFACT= only
+    - Great from =DEV=, =TEST= and =PROD=
+*** New option in =docker built= and =Dockerfiles=
+    - You can have several =FROM= and use alias =AS= so you can, in the same file use the alias to build another image
+    - From that Dockerfile you can build using the =--target= like so
+      #+begin_example
+      docker built -t myapp:prod --target prod .
+      #+end_example
+*** More Multi-stage
+    It allows you to test stage that runs npm tests
+    - Have a CI build --target test stage before building to prod
+    - Add npm install =--only=development=  to dev stage
+    - Don't =COPY= code into dev stage
