@@ -391,6 +391,8 @@
 *** RESOURCES
     - Advanced multi-stage built [[https://medium.com/@tonistiigi/advanced-multi-stage-build-patterns-6f741b852fae][MEDIUM]]
     - Official Docker [[https://docs.docker.com/develop/develop-images/multistage-build/][documentation]]
+    - Install production only dependencies [[https://stackoverflow.com/questions/9268259/how-do-you-prevent-install-of-devdependencies-npm-modules-for-node-js-package][npm --only=prod]]
+    - Better development with [[https://medium.com/better-programming/docker-in-development-with-nodemon-d500366e74df][Docker]]
 *** Multi-stage Docker built
     - New feature in 17.06 (mid-2017)
     - Build multiple images from one file
@@ -411,3 +413,27 @@
     - Have a CI build --target test stage before building to prod
     - Add npm install =--only=development=  to dev stage
     - Don't =COPY= code into dev stage
+*** Assignment: Building a 3 stage =Dockerfile= [3/3] [100%]
+    Sample file [[./sample-multi-stage/Dockerfile][here]], migrate current [[./sample-multi-stage/app.js][App]], with the following [[./sample-multi-stage/package.json][package.json]], and =ENTRYPOINT= [[./sample-multi-stage/bin/www][/bin/www]]
+    Best example in this [[./assignment-dockerfile/Dockerfile][Dockerfile]]
+    - [X] Create 3 stages for
+      - [X] =prod=
+        - [X] install just production dependencies, not dev dependencies
+        - How to run the install tag for prod
+        #+begin_example zsh
+        docker build -t myapp:prod --target prod .
+        #+end_example
+      - [X] =dev=
+        - [X] Install =dev= dependencies, another =npm= install just for that
+        - [X] This has a different =CDM= *nodemon*
+        #+begin_example zsh
+        docker build -t myapp:dev --target dev .
+        #+end_example
+      - [X] =test=
+        - [X] has dev dependencies, =run npm test=
+        - notice that you can run =npm= here as you are not concerned about *PD1* processes
+        #+begin_example zsh
+        docker build -t myapp:test --target test .
+        #+end_example
+    - [X] Built all three stages
+    - [X] Goal don't repeat lines
