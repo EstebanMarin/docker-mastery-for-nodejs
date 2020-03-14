@@ -393,6 +393,8 @@
     - Official Docker [[https://docs.docker.com/develop/develop-images/multistage-build/][documentation]]
     - Install production only dependencies [[https://stackoverflow.com/questions/9268259/how-do-you-prevent-install-of-devdependencies-npm-modules-for-node-js-package][npm --only=prod]]
     - Better development with [[https://medium.com/better-programming/docker-in-development-with-nodemon-d500366e74df][Docker]]
+    - Super charged docker build [[https://www.youtube.com/watch?v=kkpQ_UZn2uo][DockerConf18]]
+    - BuiltKit [[https://docs.docker.com/develop/develop-images/build_enhancements/][Documentation]]
 *** Multi-stage Docker built
     - New feature in 17.06 (mid-2017)
     - Build multiple images from one file
@@ -413,7 +415,7 @@
     - Have a CI build --target test stage before building to prod
     - Add npm install =--only=development=  to dev stage
     - Don't =COPY= code into dev stage
-*** Assignment: Building a 3 stage =Dockerfile= [3/3] [100%]
+*** Assignment: Building a 3 stage =Dockerfile= [3/4] [75%]           :USERS:
     Sample file [[./sample-multi-stage/Dockerfile][here]], migrate current [[./sample-multi-stage/app.js][App]], with the following [[./sample-multi-stage/package.json][package.json]], and =ENTRYPOINT= [[./sample-multi-stage/bin/www][/bin/www]]
     Best example in this [[./assignment-dockerfile/Dockerfile][Dockerfile]]
     - [X] Create 3 stages for
@@ -426,8 +428,8 @@
       - [X] =dev=
         - [X] Install =dev= dependencies, another =npm= install just for that
         - [X] This has a different =CDM= *nodemon*
-        #+begin_example zsh
-        docker build -t myapp:dev --target dev .
+        #+be
+        DOCKER_BUILDKIT=1 docker build -t myapp:dev --target dev .
         #+end_example
       - [X] =test=
         - [X] has dev dependencies, =run npm test=
@@ -437,3 +439,73 @@
         #+end_example
     - [X] Built all three stages
     - [X] Goal don't repeat lines
+#  LocalWords:  BuiltKit config Heroku MTA dockerignore Readme md Ngnx dirs
+**** Conclusions 
+     - multistage without BuiltKit will trigger unnecessary layers
+     - in Development not running =npm run dev= because we are shooting it to nodemon, better handle signals
+     - 
+*** Built Kit                                                         :USERS:
+**** Resources
+     - Introducing [[https://blog.mobyproject.org/introducing-buildkit-17e056cc5317][BuiltKit]]
+     - Super charged Docker Built with BuiltKit [[https://www.youtube.com/watch?v=kkpQ_UZn2uo][YouTube]]
+     - Official [[https://docs.docker.com/develop/develop-images/build_enhancements/][documentation]]
+       - How to install BuiltKit:
+         1. Easiest way
+            #+begin_example zsh
+            DOCKER_BUILDKIT=1 docker build .
+            #+end_example
+         2. By default change =/etc/docker/daemon.json=
+            #+begin_example zsh
+          { "features": { "buildkit": true } }
+            #+end_example
+            How yo buildkit
+        #+begin_example zsh
+        DOCKER_BUILDKIT=1 docker build -t myapp:dev --target dev .
+        #+end_example
+** Session 5 => Node Apps in Cloud Native Docker
+*** RESOURCES 
+    -[[https://12factor.net/][ 12 Factor Apps]] 
+    - [[https://blog.heroku.com/the_new_heroku_4_erosion_resistance_explicit_contracts][Software Erosion]]  
+*** Cloud Native Apps
+    12 Factor Apps => Focused for distributed systems 
+    Important to review carefully the =.dockerignore= file
+**** Follow the 12 factors, especially
+     - Use environment variables for config in:
+       1. Dockerfiles
+       2. Compose files, and also
+       3. In your app
+     - Log to =stdout/stderr=
+     - Pin all versions even =npm=
+     - Gracefully exit =SIGTERM/INIT=
+     - Create a =.dockerignore= 
+**** First, what is 12 Factor app
+     - Heroku wrote a highly respectable guide to creating distributed apps
+     - Even-though its been in the industry over a year, you should aim to use it always
+     - To create an application that does not turns old fast
+     - Shared in a way that makes sense to a lot of people
+     - Containers are almost going to be distributed apps
+     - Good news you are using most of the 12 out of the box with Docker
+**** Factor: =config=
+     - Avoid Software [[https://blog.heroku.com/the_new_heroku_4_erosion_resistance_explicit_contracts][Erosion]]
+       - How does it work Erosion-resistance is an outcome of strong separation between the app and the infrastructure on which it runs.
+*** Assignment: MTA (Migrating Traditional Apps)
+    We will migrate this [[./assignment-mta/README.md][App]] to container found in the  =./assigment-mta= 
+**** Checklist [0%] [0/3]:
+     - [ ] Add a *.dockerignore*
+     - [ ] Create a =Dockerfile=
+     - [ ] Change =Winston= transport to console, opposed to logging to a file
+**** MTA Requirements [0%] [0/5]:
+     - [ ] See *Readme.md* for =app= details
+     - [ ] Image should not include =in=, =out=, =node_modules=, or =logs= directories in =.dockerignore=
+     - [ ] Open the =index.js= file to update transport of Winston to console
+       -*Hint:* =winston.transport.Console= 
+       -*Other Option:* create a symlink in in the dockerfile where the logs are going to go, that is how the official Ngnx does it, so Symlink to =stdout= and =stderr= 
+     - [ ] *Bind-mount* =in= and =out= dirs, back out to the host
+     - [ ] Change the *environment* variable to get different results
+       - Set =CHARCOAL_FACTOR= to *0.1*
+**** MTA Outcomes [0%] [0/4]:
+     - [ ] Running container with =./in= and =./out= *bind-mounts* results in new chalk images in =out= host
+     - [ ] Changing =--env CHARCOAL_FACTOR= to *10*, the image looks different
+     - [ ] No *gifs* in the image
+     - [ ] When doing a =docker logs= shows Winston output
+#  LocalWords:  gifs

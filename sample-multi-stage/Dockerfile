@@ -12,6 +12,9 @@ RUN npm install --only=prod \
   && npm cache clean --force
 COPY --chown=node:node . .
 ENTRYPOINT [ "/sbin/tini", "--"]
+# You could run a npm run test here to ensure it passes all test before building the image
+# RUN npm run test
+# not that easey as I need to install dev dependencies
 CMD [ "node", "./bin/www" ]
 
 # Development
