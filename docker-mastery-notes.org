@@ -465,7 +465,8 @@
 ** Session 5 => Node Apps in Cloud Native Docker
 *** RESOURCES 
     -[[https://12factor.net/][ 12 Factor Apps]] 
-    - [[https://blog.heroku.com/the_new_heroku_4_erosion_resistance_explicit_contracts][Software Erosion]]  
+    - [[https://blog.heroku.com/the_new_heroku_4_erosion_resistance_explicit_contracts][Software Erosion]]
+    - How to do [[https://docs.docker.com/storage/][bind-mount]] 
 *** Cloud Native Apps
     12 Factor Apps => Focused for distributed systems 
     Important to review carefully the =.dockerignore= file
@@ -489,10 +490,16 @@
      - Avoid Software [[https://blog.heroku.com/the_new_heroku_4_erosion_resistance_explicit_contracts][Erosion]]
        - How does it work Erosion-resistance is an outcome of strong separation between the app and the infrastructure on which it runs.
 *** Assignment: MTA (Migrating Traditional Apps)
-    We will migrate this [[./assignment-mta/README.md][App]] to container found in the  =./assigment-mta= 
-**** Checklist [0%] [0/3]:
-     - [ ] Add a *.dockerignore*
-     - [ ] Create a =Dockerfile=
+    We will migrate this [[./assignment-mta/README.md][App]] with these files to container found in the  =./assigment-mta= 
+    1. [[./assignment-mta/Dockerfile][Dockerfile]]
+    2. [[./assignment-mta/.dockerignore][.dockerignore]] 
+    #+begin_example zsh
+    DOCKER_BUILDKIT=1 docker build -t node8 .
+    #+end_example
+    Maybe use this [[./sample-multi-stage/Dockerfile][Dockerfile]] 
+**** Checklist [66%] [2/3]:
+     - [X] Add a *.dockerignore*
+     - [X] Create a =Dockerfile=
      - [ ] Change =Winston= transport to console, opposed to logging to a file
 **** MTA Requirements [0%] [0/5]:
      - [ ] See *Readme.md* for =app= details
