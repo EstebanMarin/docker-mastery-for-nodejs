@@ -1,8 +1,10 @@
-FROM node:8.14-alpine as prod
+FROM node:8-jessie
+# FROM node:8-jessie as prod
 ENV NODE_ENV=production
 WORKDIR /node
 # Linux version does not uses Tini
 # RUN apk add --no-cache tini
+RUN apt-get update && apt-get install -y graphicsmagick
 RUN mkdir app && chown -R node:node .
 WORKDIR /node/app
 USER node
