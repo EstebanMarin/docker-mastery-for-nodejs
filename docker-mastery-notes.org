@@ -1,4 +1,5 @@
 * Docker Mastery node notes
+  Here is a reinstall emacs [[http://ubuntuhandbook.org/index.php/2019/02/install-gnu-emacs-26-1-ubuntu-18-04-16-04-18-10/][reboot]] 
 ** Session 1 => docker-compose basics
 *** Install Docker and docker-compose and post install
     Best advice is to follow documentation here, take into account that installation varies by OS and also /millage may vary/.
