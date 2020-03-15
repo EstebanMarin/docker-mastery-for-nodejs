@@ -125,7 +125,7 @@
     - Start with =Debian= if you are migrating an application
     - Try using =Alpine= from the start, but normally all start with *Debian*
     - Don't use =:slim=
-      | =strech=                            | =jessie=                     |
+      | =
       |-------------------------------------+------------------------------|
       | Uses the latest version of =Debian= | Uses past versions of the OS |
     - Don't use =:onbuild=
@@ -490,25 +490,32 @@
      - Avoid Software [[https://blog.heroku.com/the_new_heroku_4_erosion_resistance_explicit_contracts][Erosion]]
        - How does it work Erosion-resistance is an outcome of strong separation between the app and the infrastructure on which it runs.
 *** Assignment: MTA (Migrating Traditional Apps)
-    We will migrate this [[./assignment-mta/README.md][App]] with these files to container found in the  =./assigment-mta= 
+    We will migrate this [[./assignment-mta/index.js][App.js]] with these files to container found in the  =./assigment-mta= 
     1. [[./assignment-mta/Dockerfile][Dockerfile]]
     2. [[./assignment-mta/.dockerignore][.dockerignore]] 
     #+begin_example zsh
     DOCKER_BUILDKIT=1 docker build -t node8 .
     #+end_example
+    How to mount the application 
+    #+begin_example zsh
+    --mount type=bind,source="$(pwd)"/target,target=/app,readonly
+    docker run --mount type=bind,source="$(pwd)"/in,target=/app/in --mount type=bind,source="$(pwd)"/out,target=/app/out node8
+    docker run -v "$(pwd)"/in:/app/in -v "$(pwd)"/out:/app/out node8
+    docker run -v $(pwd)/in:/app/in -v $(pwd)/out:/app/out node8
+    #+end_example
     Maybe use this [[./sample-multi-stage/Dockerfile][Dockerfile]] 
-**** Checklist [66%] [2/3]:
+**** Checklist [100%] [3/3]:
      - [X] Add a *.dockerignore*
      - [X] Create a =Dockerfile=
-     - [ ] Change =Winston= transport to console, opposed to logging to a file
-**** MTA Requirements [0%] [0/5]:
-     - [ ] See *Readme.md* for =app= details
-     - [ ] Image should not include =in=, =out=, =node_modules=, or =logs= directories in =.dockerignore=
-     - [ ] Open the =index.js= file to update transport of Winston to console
+     - [X] Change =Winston= transport to console, opposed to logging to a file
+**** MTA Requirements [80%] [4/5]:
+     - [X] See *Readme.md* for =app= details
+     - [X] Image should not include =in=, =out=, =node_modules=, or =logs= directories in =.dockerignore=
+     - [X] Open the =index.js= file to update transport of Winston to console
        -*Hint:* =winston.transport.Console= 
        -*Other Option:* create a symlink in in the dockerfile where the logs are going to go, that is how the official Ngnx does it, so Symlink to =stdout= and =stderr= 
      - [ ] *Bind-mount* =in= and =out= dirs, back out to the host
-     - [ ] Change the *environment* variable to get different results
+     - [X] Change the *environment* variable to get different results
        - Set =CHARCOAL_FACTOR= to *0.1*
 **** MTA Outcomes [0%] [0/4]:
      - [ ] Running container with =./in= and =./out= *bind-mounts* results in new chalk images in =out= host
