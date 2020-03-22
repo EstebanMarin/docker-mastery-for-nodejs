@@ -8,6 +8,8 @@ RUN apt-get update && apt-get install -y graphicsmagick
 RUN mkdir app && chown -R node:node .
 WORKDIR /node/app
 USER node
+RUN mkdir in \
+  && mkdir out
 COPY package*.json ./
 # ensure you install just prod dependencies
 RUN npm install --only=prod \
