@@ -112,8 +112,8 @@
      *push* to docker registry
      *logs* same as =docker= CLI
      *exec* same as =docker= CLI
-*** Assignment [/] [%]
-    - [ ] Get acquainted with the =docker-compose= https://docs.docker.com/compose/reference/overview/
+*** Assignment [1/1] [100%]
+    - [X] Get acquainted with the =docker-compose= https://docs.docker.com/compose/reference/overview/
 ** Session 2 => Node Dockerfile best practices
 *** RESOURCES [3/3]
     - [X] Official Docker [[https://docs.docker.com/develop/develop-images/dockerfile_best-practices/][best practices with Dockerfile]]
@@ -500,27 +500,76 @@
     How to mount the application 
     #+begin_example zsh
     --mount type=bind,source="$(pwd)"/target,target=/app,readonly
-    docker run --mount type=bind,source="$(pwd)"/in,target=/app/in --mount type=bind,source="$(pwd)"/out,target=/app/out node8
-    docker run -v "$(pwd)"/in:/app/in -v "$(pwd)"/out:/app/out node8
-    docker run -v $(pwd)/in:/app/in -v $(pwd)/out:/app/out node8
+    docker run --mount type=bind,source="$(pwd)"/in,target=/node/app/in --mount type=bind,source="$(pwd)"/out,target=/node/app/out --env CHACOAL_FACTOR=10 node8
+    docker run -v "$(pwd)"/in:/node/app/in -v "$(pwd)"/out:/node/app/out node8
+    docker run -v $(pwd)/in:/node/app/in -v $(pwd)/out:/node/app/out node8
     #+end_example
     Maybe use this [[./sample-multi-stage/Dockerfile][Dockerfile]] 
 **** Checklist [100%] [3/3]:
      - [X] Add a *.dockerignore*
      - [X] Create a =Dockerfile=
      - [X] Change =Winston= transport to console, opposed to logging to a file
-**** MTA Requirements [80%] [4/5]:
+**** MTA Requirements [100%] [5/5]:
      - [X] See *Readme.md* for =app= details
      - [X] Image should not include =in=, =out=, =node_modules=, or =logs= directories in =.dockerignore=
      - [X] Open the =index.js= file to update transport of Winston to console
        -*Hint:* =winston.transport.Console= 
        -*Other Option:* create a symlink in in the dockerfile where the logs are going to go, that is how the official Ngnx does it, so Symlink to =stdout= and =stderr= 
-     - [ ] *Bind-mount* =in= and =out= dirs, back out to the host
+     - [X] *Bind-mount* =in= and =out= dirs, back out to the host
      - [X] Change the *environment* variable to get different results
        - Set =CHARCOAL_FACTOR= to *0.1*
+**** 
 **** MTA Outcomes [0%] [0/4]:
      - [ ] Running container with =./in= and =./out= *bind-mounts* results in new chalk images in =out= host
      - [ ] Changing =--env CHARCOAL_FACTOR= to *10*, the image looks different
      - [ ] No *gifs* in the image
      - [ ] When doing a =docker logs= shows Winston output
 #  LocalWords:  gifs
+**** Conclusions
+     1. You are able to migrate a traditional app =MTA=
+     2. Setup correctly =Environment Variables=
+     3. Check that dependencies are correct
+     4. That the app is flexible enough
+** Session 6 => Docker compose for local development
+   Best local Setup for development using =docker-compose= features, there are a lot of =tips and tricks= and a Big assignment at the end
+*** RESOURCES
+    - Compose [[./https://docs.docker.com/compose/compose-file/compose-file-v2/][version 2]] , if you are not using orchestration
+    - Good [[./compose-tips/good.yml][docker-compose]]
+    - Bad [[./compose-tips/bad.yml][docker-compose]]
+    - Performance tuning for [[https://docs.docker.com/docker-for-mac/osxfs-caching/][volume mounts]]
+    - File Sharing exclusive for [[https://docs.docker.com/docker-for-mac/osxfs-caching/][MAC-OS]]
+    - User guided caching in [[https://www.docker.com/blog/user-guided-caching-in-docker-for-mac/][Docker-MACos]] 
+*** Compose Project tips
+**** Dos
+     - Use =docker-compose= for local dev
+     - Use =v2= format for local dev:
+       - v2 only: *depends_on*, control => hardware specific
+     - Use study compose file and CLI features
+**** Don't
+     - Unnecessary: =alias= & =container_name=
+     - Legacy: =expose= & =links=
+     - No need to set =defaults=
+     - Use host file paths
+     - Don't =bind-mount= databases
+     - For development only, don't rebuild images, just restart node. Like mounting your host file over the app image.
+       Technically an image with no source code, and we bind mounting it in.
+*** =node_modules= in *Images* 
+    - *Problem*: We should not built images from node files from the host, as we could develop in Mac or Windows
+      Example: =node-gyp= that builds especially for an Architecture 
+      Solution: Put the =node_modules= in the =.dockerignore= file
+*** =node_modules= in *Bind mounts* 
+    - *Problem*: We cannot bin-mount node_modules as the have different architecture
+    - Two potential solutions:
+      1. Never use =npm install= on host, run =npm install= in compose, however is not that flexible
+        Lets look at this [[./sample-express/app.js][App.js]], with this [[./sample-express/Dockerfile][Dockerfile]] 
+        With =docker-compose= we can run a
+        #+begin_example zsh
+        docker-compose run express npm install
+        #+end_example
+        and the we can run a 
+        #+begin_example zsh
+        docker-compose up
+        #+end_example
+        to run the application. 
+      2. Move modules in image, hide modules from host, more setup but more flexible
+        - Move the =node_modules= up a directory in =Dockerfile= 
