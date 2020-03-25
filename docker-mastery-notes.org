@@ -559,17 +559,46 @@
       Solution: Put the =node_modules= in the =.dockerignore= file
 *** =node_modules= in *Bind mounts* 
     - *Problem*: We cannot bin-mount node_modules as the have different architecture
-    - Two potential solutions:
-      1. Never use =npm install= on host, run =npm install= in compose, however is not that flexible
-        Lets look at this [[./sample-express/app.js][App.js]], with this [[./sample-express/Dockerfile][Dockerfile]] 
-        With =docker-compose= we can run a
-        #+begin_example zsh
-        docker-compose run express npm install
-        #+end_example
-        and the we can run a 
-        #+begin_example zsh
-        docker-compose up
-        #+end_example
-        to run the application. 
-      2. Move modules in image, hide modules from host, more setup but more flexible
-        - Move the =node_modules= up a directory in =Dockerfile= 
+      Lets look at this [[./sample-express/app.js][App.js]], with this [[./sample-express/Dockerfile][Dockerfile]] 
+****  Two potential solutions:
+       1. Never use =npm install= on host, run =npm install= in compose, however is not that flexible
+         using this docker-compose
+         Using this [[./sample-express/Dockerfile-solution-1][Dockerfile solution 1]] as template
+         With =docker-compose= we can run a
+         #+begin_example zsh
+         docker-compose run express npm install
+         #+end_example
+         and the we can run a 
+         #+begin_example zsh
+         docker-compose up
+         #+end_example
+         to run the application.
+         Conclusion:
+          1. You can't run a =docker-compose up= until you run =docker-compose run= on the services
+       2. Move modules in image, hide modules from host, more setup but more flexible
+          Using this [[./sample-express/Dockerfile-solution-2][Dockerfile solution 2]]  and [[./sample-express/docker-compose-solution-2.yml][docker-compose-solution-2]] 
+          - Move the =node_modules= up a directory in =Dockerfile=
+          - Use empty volume to hide =node_modules= on =bind mount=
+          In this case run a =npm install= so there is a =node_modules= in the host
+*** NPM, YARN, and others tools in Compose
+    pretty much when to run  =docker-compose run= or =docker-compose exec service= as well you can just run a bash in the container
+*** File monitoring and Node Auto Restart 
+    Take another express app using [[./sample-nodemon/Dockerfile][nodemon]] 
+*** Startup order and Dependencies
+    =Problem= Multi-services app start out from order, node might exit or cycle  
+    Multi-container apps needs:
+    - Dependency awareness
+    - Name resolution (DNS)
+    - Connection failure handling
+**** Dependecy awareness =dependens_on= => use V2
+     - =dependens_on= is really more about dependency relationships, by default it does not wait that is correctly up
+     - Fixes name resolution issues with "can't resolve <service_name>"
+     - Finally it means that if your service "x" =dependes_on= "y", let "y" start first, does not mean however, that is ready before "x" by default
+     - compose YAML v2: works with healthchecks like "await for script"
+**** Connection Failure Handling
+     - =restart:on failure=
+       - *Good:* helps slow db startup and Node.js failing. Better: =dependens_on=
+       - *Bad:* could spike CPU with restart cycling
+       - *Long Term:* build connection timeouts, buffer and retry in your apps
+*** Health Checks for =depends_on=
+
