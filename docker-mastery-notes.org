@@ -601,4 +601,79 @@
        - *Bad:* could spike CPU with restart cycling
        - *Long Term:* build connection timeouts, buffer and retry in your apps
 *** Health Checks for =depends_on=
+    1. We can find the /incomplete/ version of the =docker-compose= [[./depends-on/docker-compose.yml][file]]
+    2. We can find the /complete/ version using =health-checks= in this [[./depends-on/healthy-compose.yml][file]]
+     #+begin_example yaml
+      depends_on:
+        api:
+          # this requires a compose file version => 2.3 and < 3.0
+          condition: service_healthy
+     #+end_example
+     notice that we added the =condition: service_healthy= statement, then on the thing you are depending on you have to put the health check
+     #+begin_example yaml
+      healthcheck:
+        test: curl -f http://127.0.0.1
+     #+end_example
+**** RESOURCES 
+     - [[https://docs.docker.com/compose/compose-file/compose-file-v2/#healthcheck][Docker Official documentation]]
+     - [[https://github.com/docker-library/healthcheck][Github, enable official HEALTHCHECKS]] 
+*** Making Micro-services Easier
+**** *Problem:* many HTTP endpoints, many ports
+    *Solution:* =Nginx/HAProxy/Traefix= using their /reverse_proxy/ solution
+    Resources:
+      - Medium use [[https://medium.com/@sumankpaul/use-nginx-proxy-and-dnsmasq-for-user-friendly-urls-during-local-development-a2ffebd8b05d][nginx proxies in local development]]
+      - [[https://containo.us/traefik/][traefik]] cloud router
+      - [[https://github.com/nginx-proxy/nginx-proxy][nginx-proxy]]  for Docker Containers using docker-gen
+**** *Problem:* =CORS= issues in local development
+    *Solution:* Proxy with =*= header
+    Resources:
+      - Repo [[https://github.com/docker-solr/docker-solr/issues/182][Question 1]]
+      - Repo [[https://github.com/nginx-proxy/nginx-proxy/issues/804][Question 2]] 
+**** *Problem:* HTTPS for local development
+    *Solution:* Certificates for [[https://letsencrypt.org/docs/certificates-for-localhost/][localhost]] 
+**** *Problem:* Local DNS for many End points
+    *Solution:* use =x.localhost=, =y.localhost= in Chrome, however, is Chrome specific
+    Resources:
+      - Use wildcard domains like [[http://xip.io/][xio.io]]
+      - Use [[https://www.stevenrombauts.be/2018/01/use-dnsmasq-instead-of-etc-hosts/][DNSMASQ]] instead of /ETC/HOST this is a local DNS server running on your local machine
+      - Manually edit host files:
+        | Cons                                                                            | Pros |
+        |---------------------------------------------------------------------------------+------|
+        | Does not work with wild cards, ergo you need to add manually each micro-service |      |
+        |                                                                                 |      |
+**** *Demo:* Setting up proxy (./sample-local-proxy)
+     Notice that =docker-compose= (this is a general =docker= issue), will only work if the VPN is disabled, the following [[https://stackoverflow.com/questions/45692255/how-make-openvpn-work-with-docker][link]] to make them work together.
+***** [[./sample-local-proxy/nginx-proxy.yml][Nginx-proxy]] 
+      - [[https://hub.docker.com/r/jwilder/nginx-proxy/][Docker-hub]]
+      #+begin_src zsh
+      cd ./sample-local-proxy/ && cp nginx-proxy.yml docker-compose.yml
+      #+end_src
+      #+RESULTS:
+      run a =docker-compose up=, and you can now go [[http://dude.localhost/][dude.localhost]] and [[http://ghost.localhost/][ghost.localhost]]   
+***** [[./sample-local-proxy/traefik-proxy.yml][Traefik-proxy]] 
+      [[https://docs.traefik.io/getting-started/quick-start/][Quick-Start]] 
+      #+begin_src zsh
+      cd ./sample-local-proxy/ && cp traefik-proxy.yml docker-compose.yml
+      #+end_src
 
+      #+RESULTS:
+*** VS Code, Debugging, and TypeScript
+    - Obviously VS Code is a well rounded as well as they have =docker= and =compose= features built in, however, better if I not tie to that
+    - Debugging work when we enable nodemon and remote via TCP, feature of Docker!!
+    - TypeScript compile and other pre-processors go in =nodemon.json=
+**** RESOURCES 
+     - [[https://code.visualstudio.com/docs/nodejs/nodejs-debugging][Debug]] an app using VSCode
+     - [[https://github.com/Microsoft/vscode-recipes/tree/master/Docker-TypeScript][Debugging TypeScript in an Docker Container]]
+     - [[https://github.com/TypeStrong/ts-node][ts-node]]  
+**** *Demo:* (./typescript)
+      - [[./typescript/Dockerfile][Dockerfile]]
+        - Multistage built
+      - [[./typescript/docker-compose.yml][docker-compose.yml]]
+        - =target: dev= gives us a target from the image
+        - =volumes= the =- .:/app=, is solution 1 of the *Bind Mounts* demo
+      - [[./typescript/package.json][package.json]] 
+      - [[./typescript/tsconfig.json][tsconfig.json]] 
+      - [[./typescript/nodemon.json][nodemon.json]]
+        - We tell to watch the src file and ignore the tests
+        - notice the =exec= in =--inspect=0.0.0.0:9229=
+        - =ts-node/register= which automatically compiles typescript
