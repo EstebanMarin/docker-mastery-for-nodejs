@@ -677,3 +677,4 @@
         - We tell to watch the src file and ignore the tests
         - notice the =exec= in =--inspect=0.0.0.0:9229=
         - =ts-node/register= which automatically compiles typescript
+      in current commit from master =ed8542b= we are having an issue in regards to nodemon, fixed in Esteban branch
