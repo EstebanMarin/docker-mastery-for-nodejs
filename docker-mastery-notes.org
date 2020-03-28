@@ -529,7 +529,7 @@
      1. You are able to migrate a traditional app =MTA=
      2. Setup correctly =Environment Variables=
      3. Check that dependencies are correct
-     4. That the app is flexible enough
+     4. That the app is flexible e
 ** Session 6 => Docker compose for local development
    Best local Setup for development using =docker-compose= features, there are a lot of =tips and tricks= and a Big assignment at the end
 *** RESOURCES
@@ -664,7 +664,8 @@
 **** RESOURCES 
      - [[https://code.visualstudio.com/docs/nodejs/nodejs-debugging][Debug]] an app using VSCode
      - [[https://github.com/Microsoft/vscode-recipes/tree/master/Docker-TypeScript][Debugging TypeScript in an Docker Container]]
-     - [[https://github.com/TypeStrong/ts-node][ts-node]]  
+     - [[https://github.com/TypeStrong/ts-node][ts-node]]
+     - 
 **** *Demo:* (./typescript)
       - [[./typescript/Dockerfile][Dockerfile]]
         - Multistage built
@@ -678,3 +679,48 @@
         - notice the =exec= in =--inspect=0.0.0.0:9229=
         - =ts-node/register= which automatically compiles typescript
       in current commit from master =ed8542b= we are having an issue in regards to nodemon, fixed in Esteban branch
+*** =Assigment= Building a sweet compose file [9/17] [52%] (./assignment-sweet-compose-file)
+    files:
+    - [[./assignment-sweet-compose/docker-compose.yml][docker-compose.yml]] => focus on this one, don't touch [[./assignment-sweet-compose/result/Dockerfile][Dockerfile]] 
+    - [[./assignment-sweet-compose/README.md][Readme]]
+    - [[./assignment-sweet-compose/result/server.js][server.js]]
+    - [[./assignment-sweet-compose/answer/docker-compose.yml][Answer File]] 
+    Checklist:
+    
+    The finished compose.yml should include:
+    
+    * [X] Set the compose file version to the latest 2.x (done for you)
+    * [X] Healthcheck for postgres, taken from the depends_on lecture
+      + Check this [[./depends-on/healthy-compose.yml][file]] 
+    * [X] Healthcheck for redis, test command is "redis-cli ping"
+      + [[https://github.com/docker-library/healthcheck/tree/master/redis][Redis healthcheck]] 
+    * [X] vote service depends on redis service
+    * [X] result service depends on db service
+    * [X] worker depends on db and redis services
+    * [X] remember to add the service_healthy to depends on objects
+    * [X] result is a node app in subdirectory result. Let's bind-mount that
+    * [X] result should be built from the Dockerfile in ./result/
+      + like so in the file
+        #+begin_example yml
+        build: 
+          context: result
+        #+end_example
+    * [ ] Add a traefik proxy service from proxy lecture example. Have it run on a published port of your choosing and direct vote.localhost and result.localhost to their respective services so you can use Chrome
+      - Adding a traefix [[./sample-local-proxy/traefik-proxy.yml][file]] 
+    * [ ] Add nodemon to the result service based on file watching lecture. You may need to get nodemon into the result image somehow.
+    * [ ] Enable NODE_ENV=development mode for result
+    * [ ] Enable debug and publish debug port for result
+    
+      Things to test once finished to ensure it's working:
+
+    * [ ] Edit ./result/server.js, save it, and ensure it restarts
+    * [ ] Ensure you never see "Waiting for db" in docker-compose logs, which happens when vote or result are waiting on db or redis to start
+    * [ ] Use VS Code or another editor with debugger (or Chrome) to connect to debugger
+    * [ ] Goto vote.localhost and result.localhost and ensure you can vote and see result
+** Session 7 => Making Container Images Production Ready
+*** Avoid devDependecies in Prod
+    + Multistage can solve this
+    + prod stages: =npm i --only=production=
+    + dev stages: =npm i --only=development=
+    + use =npm ci= to speed up builds
+    + ensure =NODE_ENV= is set and consistent
