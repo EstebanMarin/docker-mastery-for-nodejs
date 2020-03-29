@@ -818,8 +818,6 @@
 **** *DEMO:* (./healthchecks/)
 *** *Assigment: [0/27][0%]* Ultimate Node.js Dockerfile ./ultimate-node-dockerfile/
    *Attributes:* Developer Friendly, testing stage, security, scanning, non-root user, labels, minimal prod-size
-   *RESOURCES*  
-   + [[./multi-stage-test/Dockerfile][./multi-stage-test/Dockerfile]]
    *The finished Dockerfile should include*  
    - [ ] Create a multi-stage Dockerfile that supports specific images for production, testing, and development.
    - [ ] devDependencies should not exist in production image.
@@ -859,9 +857,10 @@
       functional test across containers. after a moment delay,
       it should pass.
    *Files:* 
-   + [[./ultimate-node-dockerfile/README.md][./ultimate-node-dockerfile/README.md]] 
    + [[./ultimate-node-dockerfile/.dockerignore][./ultimate-node-dockerfile/.dockerignore]]
    + [[./ultimate-node-dockerfile/package.json][./ultimate-node-dockerfile/package.json]] 
    + [[./ultimate-node-dockerfile/server.js][./ultimate-node-dockerfile/server.js]]
    + [[./ultimate-node-dockerfile/docker-compose.yml][./ultimate-node-dockerfile/docker-compose.yml]]
    + [[./ultimate-node-dockerfile/Dockerfile][./ultimate-node-dockerfile/Dockerfile]]
+   *RESOURCES*  
+   + [[./multi-stage-test/Dockerfile][./multi-stage-test/Dockerfile]]
