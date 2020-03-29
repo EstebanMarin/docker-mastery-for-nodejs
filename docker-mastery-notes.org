@@ -816,3 +816,14 @@
 **** Notes
     - Always include =HEALTHCHECK=
 **** *DEMO:* (./healthchecks/)
+*** *Assigment:* Ultimate Node.js Dockerfile ./ultimate-node-dockerfile/
+   *Attributes:* Developer Friendly, testing stage, security, scanning, non-root user, labels, minimal prod-size
+   *RESOURCES*  
+   + [[./multi-stage-test/Dockerfile][./multi-stage-test/Dockerfile]] 
+   *Files:* 
+   + [[./ultimate-node-dockerfile/README.md][./ultimate-node-dockerfile/README.md]] 
+   + [[./ultimate-node-dockerfile/.dockerignore][./ultimate-node-dockerfile/.dockerignore]]
+   + [[./ultimate-node-dockerfile/package.json][./ultimate-node-dockerfile/package.json]] 
+   + [[./ultimate-node-dockerfile/server.js][./ultimate-node-dockerfile/server.js]]
+   + [[./ultimate-node-dockerfile/docker-compose.yml][./ultimate-node-dockerfile/docker-compose.yml]]
+   + [[./ultimate-node-dockerfile/Dockerfile][./ultimate-node-dockerfile/Dockerfile]]
