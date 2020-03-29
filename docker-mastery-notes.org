@@ -423,13 +423,14 @@
       - [X] =prod=
         - [X] install just production dependencies, not dev dependencies
         - How to run the install tag for prod
-        #+begin_example zsh
+        #+b
+        egin_example zsh
         docker build -t myapp:prod --target prod .
         #+end_example
       - [X] =dev=
         - [X] Install =dev= dependencies, another =npm= install just for that
         - [X] This has a different =CDM= *nodemon*
-        #+be
+        #+begin_example zsh
         DOCKER_BUILDKIT=1 docker build -t myapp:dev --target dev .
         #+end_example
       - [X] =test=
@@ -718,9 +719,100 @@
     * [ ] Use VS Code or another editor with debugger (or Chrome) to connect to debugger
     * [ ] Goto vote.localhost and result.localhost and ensure you can vote and see result
 ** Session 7 => Making Container Images Production Ready
-*** Avoid devDependecies in Prod
+*** Avoid devDependecies in Prod *DEMO:* (./multi-stage-deps)
+   | *Files:*              | Description                                      |
+   |-----------------------+--------------------------------------------------|
+   | [[./sample-multi-stage/app.js][app.js]]                | App Entry point                                  |
+   | [[./sample-multi-stage/Dockerfile][Dockerfile]]            | with node 12 and alpine, nice (not from project) |
+   | [[./multi-stage-deps/Dockerfile][MultiStage DockerFile]] | Node 10 and from current                         |
+   | [[./multi-stage-deps/docker-compose.yml][docker-compose.yml]]    | Taking into account                              |
     + Multistage can solve this
     + prod stages: =npm i --only=production=
     + dev stages: =npm i --only=development=
     + use =npm ci= to speed up builds
     + ensure =NODE_ENV= is set and consistent
+    *Notes:* 
+    - For dev, we are not [[./multi-stage-deps/Dockerfile][copying:line20]] in the Dockerfil as we will [[./multi-stage-deps/docker-compose.yml][bind-mount]] anyway in the Docker-compose file
+*** Dockerfile comments, arguments, and labels
+**** RESOURCES
+     - [[https://docs.docker.com/engine/reference/builder/#label][Dockerdocumentation:label]]
+     - [[https://docs.docker.com/config/labels-custom-metadata/][DockerDocs2:label]]
+     - [[https://github.com/opencontainers/image-spec/blob/master/annotations.md][Community:]] standard
+     - [[https://docs.docker.com/engine/reference/builder/#arg][docs:ARGS]] 
+     - Document every non-obvious line
+     - FROM stage, document why is needed
+     - RUN => comment
+     - Add LABELS
+     - RUN npm config list
+***** Label has OCI standards now: 
+      - LABEL org.opencontainers.image.<key>
+      - =ARG= to add info labels like built date or git commit
+      - Docker Hub has builtin envvars for use of ARGs
+***** Compose file documentation also:
+      - =YAML= supports comments unlike JSON
+      - Document why a volume is need it, like a bind-mount or data base
+      - Also why a custom =CMD= is needed
+      - Template blocks at the top!
+***** *DEMO:* dockerfile (./dockerfile-labels)
+       *Files:*
+       + [[./dockerfile-labels/Dockerfile][Dockerfile]]
+       + [[./dockerfile-labels/index.js][index.js]]
+       + [[./dockerfile-labels/build.sh][build.sh]] 
+*** Running test During Image builds
+    Docker its is own build system, so we can avoid complicated CI/CD just to run them:
+    + =RUN npm test= in a specific built stage
+      + Good for running linting commands
+    + Only run unit test inside the container
+    + *Test Stage* should not be a default
+    + Locally you should run a:
+    #+begin_example zsh
+    docker-compose run node npm test
+    #+end_example
+    That way you avoid having to build and run there the tests
+**** sample project (./multi-stage-test/)
+     *Files:*
+     + [[./multi-stage-test/Dockerfile][Dockerfile]]
+     + [[./multi-stage-test/docker-compose.yml][docker-compose.yml]]
+     *Notes:* 
+     - Runs =npm config list= to add metadata
+     - leave the production ready at the end, so we have always a working image
+     - You can have several gains using =BUILDKIT=
+      #+begin_example zsh
+      docker build -t myapp:test --target test .
+      #+end_example
+**** RESOURCES
+     - [[https://blog.risingstack.com/node-hero-node-js-unit-testing-tutorial/][node-unit-test]]
+     - [[https://docs.docker.com/docker-hub/builds/advanced/][advanced:autobuild/autotest]] 
+*** Security Scan during image builds
+**** RESOURCES
+     - [[https://snyk.io/blog/ten-npm-security-best-practices/][10 npm security best practices]]
+     - [[https://kubedex.com/container-scanning/][Container Scanning:Part1]]
+     - [[https://kubedex.com/follow-up-container-scanning-comparison/][Container Scanning:Part2]]
+     - [[https://sysdig.com/blog/docker-image-scanning/][Implement image scanning]]
+     - [[https://sysdig.com/blog/20-docker-security-tools/][29 Docker security tools]] 
+**** *DEMO:* Security Scanning and Auditing (./multi-stage-scanning/)
+     *Files:* 
+     + [[./multi-stage-scanning/Dockerfile][Dockerfile]]
+     + [[./multi-stage-scanning/docker-compose.yml][docker-compose.yml]]
+     *Notes:* 
+     + The tools will fail by default, so start with =warnings=
+     + microscanner will require login and storing into env variable
+     #+begin_example zsh
+     docker build -t auditnode --target=audit --build-arg MICROSCANNER_TOKEN=$MICROSCANNER .
+     #+end_example
+*** CI/CD Automated builds
+    + Have CI build images on (some) branches
+    + Push to registry once build/test pass
+    + Lint =Dockerfile= and =compose/stack= files
+    + You can use =docker-compose= for CI/CD, however, be wary of [[https://stackoverflow.com/questions/29568352/using-docker-compose-with-ci-how-to-deal-with-exit-codes-and-daemonized-linked][exit codes]] also use =--exit-code-from=
+    + *Docker Hub* is a lightweight solution for CI/CD, [[https://docs.docker.com/docker-hub/builds/automated-testing/][check-this-link]]
+    *Image Tagging* 
+    + <name>:latest is only a convention, [[https://blog.container-solutions.com/docker-latest-confusion][latest-confusion]], never on production
+    + Don't repeat tags in CI
+*** Dockerfile Healthcheck 
+**** RESOURCES
+    - [[https://medium.com/@patrickleet/effective-docker-healthchecks-for-node-js-b11577c3e595][Effective Docker Healthchecks]]
+    - [[https://docs.docker.com/engine/reference/builder/#healthcheck][docs:HEALTHCHECK]] 
+**** Notes
+    - Always include =HEALTHCHECK=
+**** *DEMO:* (./healthchecks/)
