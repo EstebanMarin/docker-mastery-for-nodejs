@@ -493,7 +493,7 @@
        - How does it work Erosion-resistance is an outcome of strong separation between the app and the infrastructure on which it runs.
 *** Assignment: MTA (Migrating Traditional Apps)
     We will migrate this [[./assignment-mta/index.js][App.js]] with these files to container found in the  =./assigment-mta= 
-    1. [[./assignment-mta/Dockerfile][Dockerfile]]
+    1. [[./assignment-dockerfile/Dockerfile][./assignment-dockerfile/Dockerfile]] 
     2. [[./assignment-mta/.dockerignore][.dockerignore]] 
     #+begin_example zsh
     DOCKER_BUILDKIT=1 docker build -t node8 .
@@ -519,7 +519,6 @@
      - [X] *Bind-mount* =in= and =out= dirs, back out to the host
      - [X] Change the *environment* variable to get different results
        - Set =CHARCOAL_FACTOR= to *0.1*
-**** 
 **** MTA Outcomes [0%] [0/4]:
      - [ ] Running container with =./in= and =./out= *bind-mounts* results in new chalk images in =out= host
      - [ ] Changing =--env CHARCOAL_FACTOR= to *10*, the image looks different
@@ -541,6 +540,9 @@
     - File Sharing exclusive for [[https://docs.docker.com/docker-for-mac/osxfs-caching/][MAC-OS]]
     - User guided caching in [[https://www.docker.com/blog/user-guided-caching-in-docker-for-mac/][Docker-MACos]] 
 *** Compose Project tips
+    *FILE* 
+    - [[./compose-tips/bad.yml][./compose-tips/bad.yml]]
+    - [[./compose-tips/good.yml][./compose-tips/good.yml]] 
 **** Dos
      - Use =docker-compose= for local dev
      - Use =v2= format for local dev:
@@ -577,7 +579,7 @@
          Conclusion:
           1. You can't run a =docker-compose up= until you run =docker-compose run= on the services
        2. Move modules in image, hide modules from host, more setup but more flexible
-          Using this [[./sample-express/Dockerfile-solution-2][Dockerfile solution 2]]  and [[./sample-express/docker-compose-solution-2.yml][docker-compose-solution-2]] 
+          Using this[[./sample-express/Dockerfile][./sample-express/Dockerfile]]  and [[./sample-express/docker-compose-solution-2.yml][docker-compose-solution-2]] 
           - Move the =node_modules= up a directory in =Dockerfile=
           - Use empty volume to hide =node_modules= on =bind mount=
           In this case run a =npm install= so there is a =node_modules= in the host
@@ -816,9 +818,11 @@
 **** Notes
     - Always include =HEALTHCHECK=
 **** *DEMO:* (./healthchecks/)
-*** *Assigment: [0/27][0%]* Ultimate Node.js Dockerfile ./ultimate-node-dockerfile/
+*** *Assigment: [1/29][3%]* Ultimate Node.js Dockerfile ./ultimate-node-dockerfile/
    *Attributes:* Developer Friendly, testing stage, security, scanning, non-root user, labels, minimal prod-size
    *The finished Dockerfile should include*  
+   - [X] =node_modules= in =.dockerignore=
+   - [ ] *bind-mount* Solution 1 and Solution 2
    - [ ] Create a multi-stage Dockerfile that supports specific images for production, testing, and development.
    - [ ] devDependencies should not exist in production image.
    - [ ] Use `npm ci` to install production dependencies.
@@ -864,3 +868,8 @@
    + [[./ultimate-node-dockerfile/Dockerfile][./ultimate-node-dockerfile/Dockerfile]]
    *RESOURCES*  
    + [[./multi-stage-test/Dockerfile][./multi-stage-test/Dockerfile]]
+   + [[./multi-stage-test/docker-compose.yml][./multi-stage-test/docker-compose.yml]] 
+   *Good-docker-defaults* 
+   + [[../node-docker-good-defaults/docker-compose.yml][../node-docker-good-defaults/docker-compose.yml]]
+   + [[../node-docker-good-defaults/.dockerignore][../node-docker-good-defaults/.dockerignore]] 
+   + [[../node-docker-good-defaults/Dockerfile][../node-docker-good-defaults/Dockerfile]]
