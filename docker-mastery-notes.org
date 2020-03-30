@@ -818,16 +818,24 @@
 **** Notes
     - Always include =HEALTHCHECK=
 **** *DEMO:* (./healthchecks/)
-*** *Assigment: [1/29][3%]* Ultimate Node.js Dockerfile ./ultimate-node-dockerfile/
+*** *Assigment: [2/30][6%]* Ultimate Node.js Dockerfile ./ultimate-node-dockerfile/
    *Attributes:* Developer Friendly, testing stage, security, scanning, non-root user, labels, minimal prod-size
    *The finished Dockerfile should include*  
    - [X] =node_modules= in =.dockerignore=
-   - [-] *bind-mount* Solution 1 and Solution 2
+   - [X] *bind-mount* Solution 1 and Solution 2
      - [X] With a *solution 1* :
          #+begin_example zsh
          docker-compose run result npm install
          #+end_example
-     - [ ] With a *solution 2* :
+     - [X] With a *solution 2* :
+       In general we need to:
+       1. WORKDIR /node and copy package*.json, npm install, all Dockerfile
+       2. Setup volumes correctly, in docker-compose file
+        #+begin_example yml
+        volumes:
+          - .:/node/app
+          - /node/app/node_modules
+        #+end_example
    - [ ] Create a multi-stage Dockerfile that supports specific images for production, testing, and development.
    - [ ] devDependencies should not exist in production image.
    - [ ] Use `npm ci` to install production dependencies.
