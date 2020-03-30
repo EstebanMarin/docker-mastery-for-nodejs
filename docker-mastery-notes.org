@@ -822,7 +822,12 @@
    *Attributes:* Developer Friendly, testing stage, security, scanning, non-root user, labels, minimal prod-size
    *The finished Dockerfile should include*  
    - [X] =node_modules= in =.dockerignore=
-   - [ ] *bind-mount* Solution 1 and Solution 2
+   - [-] *bind-mount* Solution 1 and Solution 2
+     - [X] With a *solution 1* :
+         #+begin_example zsh
+         docker-compose run result npm install
+         #+end_example
+     - [ ] With a *solution 2* :
    - [ ] Create a multi-stage Dockerfile that supports specific images for production, testing, and development.
    - [ ] devDependencies should not exist in production image.
    - [ ] Use `npm ci` to install production dependencies.
