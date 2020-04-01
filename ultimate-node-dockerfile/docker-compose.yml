@@ -21,6 +21,7 @@ services:
   result:
     build: 
       context: .
+      target: dev
     command: /opt/node/app/node_modules/.bin/nodemon ./server.js 
     ports:
       - '5001:80'

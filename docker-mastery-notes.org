@@ -915,4 +915,9 @@
    + [[../node-docker-good-defaults/docker-compose.yml][../node-docker-good-defaults/docker-compose.yml]]
    + [[../node-docker-good-defaults/.dockerignore][../node-docker-good-defaults/.dockerignore]] 
    + [[../node-docker-good-defaults/Dockerfile][../node-docker-good-defaults/Dockerfile]]
-
+*** =Assigment= answer
+    - [[./ultimate-node-dockerfile/answer/Dockerfile][./ultimate-node-dockerfile/answer/Dockerfile]]
+    - [[./multi-stage-scanning/Dockerfile][./multi-stage-scanning/Dockerfile]] 
+   RESOURCES:
+   - [[https://github.com/krallin/tini][https://github.com/krallin/tini]]
+   - [[https://github.com/aquasecurity/microscanner][https://github.com/aquasecurity/microscanner]] 
