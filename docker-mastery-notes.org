@@ -423,8 +423,7 @@
       - [X] =prod=
         - [X] install just production dependencies, not dev dependencies
         - How to run the install tag for prod
-        #+b
-        egin_example zsh
+        #+begin_example zsh
         docker build -t myapp:prod --target prod .
         #+end_example
       - [X] =dev=
@@ -921,3 +920,27 @@
    RESOURCES:
    - [[https://github.com/krallin/tini][https://github.com/krallin/tini]]
    - [[https://github.com/aquasecurity/microscanner][https://github.com/aquasecurity/microscanner]] 
+ -----------------------------------------------------------
+** Session k8r
+*** Terminology 
+**** *kubectl* cube control
+**** *Node* Single server running in the Kubernetes cluster
+**** *Kublet* Kubernetes agent running on nodes
+**** *Control Panel* Set of containers that run the cluster
+*** Installing k8s in Linux Manajaro
+    https://www.howtoforge.com/learning-kubernetes-locally-via-minikube-on-linux-manjaro-archlinux/
+    https://dev.to/setevoy/kubernetes-running-minikube-on-arch-linux-ne2
+    https://kubernetes.io/docs/tasks/tools/install-minikube/
+    When running locally please ensure that you run like so
+    #+begin_src 
+    minikube start --kubernetes-version='1.17.4'
+    #+end_src
+    To run latest version of Kubernetes minikube defaults to =1.18= 
+    #+begin_src 
+    minikube start
+    #+end_src
+**** *ENSURE YOU INSTALL THE VERSION OF KUBECTL THAT MATCHES YOUR MINIKUBE* 
+    https://kubernetes.io/docs/tasks/tools/install-kubectl/ => installing the 17.4 version for course
+    curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.4/bin/linux/amd64/kubectl
+*** k8s abstractions
+**** [[https://kubernetes.io/docs/concepts/][Read the fucking manual]]  
